@@ -1,0 +1,15 @@
+# .gitignore
+*.exe
+*.dll
+*.exe~
+*.dll~
+*.exe.manifest
+*.test
+*.prof
+*.out
+*.test
+/_test/
+/vendor/
+go.sum
+tmp
+.env
