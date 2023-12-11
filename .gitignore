@@ -10,6 +10,5 @@
 *.test
 /_test/
 /vendor/
-go.sum
 tmp
 .env

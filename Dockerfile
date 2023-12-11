@@ -2,7 +2,11 @@ FROM golang:1.21.3 AS builder
 
 WORKDIR /build
 
-COPY . .
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY main.go .env.example /build/
+COPY ./pkg /build/pkg
 
 RUN go build -o main .
 
