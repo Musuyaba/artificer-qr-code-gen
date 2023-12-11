@@ -22,15 +22,30 @@ services:
     volumes:
       - storage:/app/storage
 
-  nginx:
-    image: nginx:latest
+  traefik:
+    image: traefik:2.10.7
+    command:
+      - "--api.insecure=true"
+      - "--providers.file.directory=/etc/traefik"
+      - "--providers.file.watch=true"
     env_file:
       - .env
-    volumes:
-      - ./nginx:/etc/nginx
     ports:
       - "80:80"
-    command: /bin/bash -c "envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+      - "8080:8080"
+    volumes:
+      - "./traefik/traefik.toml:/etc/traefik/traefik.toml"
+      # - ./traefik:/etc/traefik
+
+  # nginx:
+  #   image: nginx:latest
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./nginx:/etc/nginx
+  #   ports:
+  #     - "80:80"
+  #   command: /bin/bash -c "envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
 
 volumes:
   storage:
