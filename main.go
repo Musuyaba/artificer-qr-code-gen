@@ -102,5 +102,5 @@ func main() {
 		})
 	})
 
-	r.Run(viper.GetString("HOST") + ":" + viper.GetString("PORT"))
+	r.Run("0.0.0.0" + ":" + viper.GetString("PORT_GOLANG"))
 }
