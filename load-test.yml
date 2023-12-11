@@ -1,0 +1,10 @@
+config:
+  target: "{{ $processEnvironment.WEB_PROXY }}"
+  phases:
+    - duration: 30
+      arrivalRate: 200
+      maxVusers: 5
+scenarios:
+  - flow:
+      - get:
+          url: '/chart?chs=100x100&cht=qr&chl={{ $randomString(10) }}'
