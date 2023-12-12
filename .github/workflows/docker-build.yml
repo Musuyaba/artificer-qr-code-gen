@@ -23,12 +23,19 @@ jobs:
       - name: Before Run
         run: cp .env.example .env
 
+      - name: Extract Version from .env
+        id: extract_version
+        run: |
+          export VERSION=$(grep 'APP_VERSION=' .env | cut -d'=' -f2)
+          echo "::set-output name=version::$VERSION"
+
       - name: Build and Push Docker Image
         run: |
-          docker compose build common
+          version=${{ steps.extract_version.outputs.version }}
+          docker compose build --build-arg SERVICE_NAME=${version}-${{ steps.datetime.outputs.formatted_date }} common
           docker tag musuyaba/artificer-qr-code-gen:latest ${{ secrets.DOCKER_USERNAME }}/artificer-qr-code-gen:latest
-          docker tag musuyaba/artificer-qr-code-gen:latest ${{ secrets.DOCKER_USERNAME }}/artificer-qr-code-gen:${{ steps.datetime.outputs.formatted_date }}
+          docker tag musuyaba/artificer-qr-code-gen:latest ${{ secrets.DOCKER_USERNAME }}/artificer-qr-code-gen:${version}-${{ steps.datetime.outputs.formatted_date }}
           docker push ${{ secrets.DOCKER_USERNAME }}/artificer-qr-code-gen:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/artificer-qr-code-gen:${{ steps.datetime.outputs.formatted_date }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/artificer-qr-code-gen:${version}-${{ steps.datetime.outputs.formatted_date }}
         env:
           DOCKER_BUILDKIT: 1
