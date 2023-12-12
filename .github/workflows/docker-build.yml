@@ -26,9 +26,9 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           docker compose build common
-          docker tag common:latest ${{ secrets.DOCKER_USERNAME }}/common:latest
-          docker tag common:latest ${{ secrets.DOCKER_USERNAME }}/common:${{ steps.datetime.outputs.formatted_date }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/common:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/common:${{ steps.datetime.outputs.formatted_date }}
+          docker tag musuyaba/artificer-qr-code-gen:latest ${{ secrets.DOCKER_USERNAME }}/artificer-qr-code-gen:latest
+          docker tag musuyaba/artificer-qr-code-gen:latest ${{ secrets.DOCKER_USERNAME }}/artificer-qr-code-gen:${{ steps.datetime.outputs.formatted_date }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/artificer-qr-code-gen:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/artificer-qr-code-gen:${{ steps.datetime.outputs.formatted_date }}
         env:
           DOCKER_BUILDKIT: 1
