@@ -1,40 +1,33 @@
 version: '3.6'
 
 services:
-  app1:
+  common:
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
       - storage:/app/storage
+    image: musuyaba/artificer-qr-code-gen
+
+  app1:
+    extends:
+      service: common
 
   app2:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - storage:/app/storage
+    extends:
+      service: common
 
   app3:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - storage:/app/storage
+    extends:
+      service: common
 
   app4:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - storage:/app/storage
+    extends:
+      service: common
 
   app5:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - storage:/app/storage
+    extends:
+      service: common
 
   # traefik:
   #   image: traefik:2.10.7
