@@ -20,6 +20,9 @@ jobs:
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Before Run
+        run: cp .env.example .env
+
       - name: Build and Push Docker Image
         run: |
           docker compose build common
