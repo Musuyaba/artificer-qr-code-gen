@@ -1,0 +1,22 @@
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream backend {
+        server localhost:8081;
+        server localhost:8082;
+        server localhost:8083;
+        server localhost:8084;
+        server localhost:8085;
+    }
+
+    server {
+        listen 80;
+        server_name ${HOST_PROXY};
+
+        location / {
+            proxy_pass http://backend;
+        }
+    }
+}

@@ -29,6 +29,21 @@ services:
     extends:
       service: common
 
+  aio:
+    container_name: artificer-aio-run
+    build:
+      context: .
+      dockerfile: aio.Dockerfile
+      args:
+        - HOST_PROXY=${HOST_PROXY}
+    volumes:
+      - qr-storage:/app/storage
+    ports:
+      - "80:80"
+    environment:
+      - HOST_PROXY=artificer.localhost.local
+    image: musuyaba/artificer-qr-code-gen-aio
+
   # traefik:
   #   image: traefik:2.10.7
   #   env_file:
@@ -51,3 +66,4 @@ services:
 
 volumes:
   storage:
+  qr-storage:

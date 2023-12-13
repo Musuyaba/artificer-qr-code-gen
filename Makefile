@@ -5,3 +5,6 @@ test-traefik:
 test-nginx:
 	artillery run --output report_nginx.json load-test.yml && \
 	artillery report --output report_nginx.html report_nginx.json
+
+build-run-aio:
+	docker compose up --build aio
