@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-push:
+  setup:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,10 +15,11 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Set Date and Time Variables
-        id: datetime
-        run: echo "::set-output name=formatted_date::$(date +'%Y%m%d%H%M')"
-
+      - name: Use Node.js 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
@@ -31,6 +32,11 @@ jobs:
           export VERSION=$(grep 'APP_VERSION=' .env | cut -d'=' -f2)
           echo "::set-output name=version::$VERSION"
 
+  determine_version:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
       - name: Set Git user information
         run: |
           git config user.email "musuyaba@gmail.com"
@@ -40,19 +46,24 @@ jobs:
         id: version
         run: |
           LAST_TAG=$(git describe --abbrev=0 --tags 2>/dev/null || echo "v1.0")
-          MAJOR_VERSION="${{ steps.extract_version_env.outputs.version }}"
+          MAJOR_VERSION="${{ needs.setup.outputs.extract_version_env }}"
           MINOR_VERSION=$(awk -F'.' '{print $2}' <<< "$LAST_TAG")
-          NEXT_VERSION="$MAJOR_VERSION.$((MINOR_VERSION + 1))"
+          NEXT_VERSION="$MAJOR_VERSION.$((MINOR_VERSION + 1))-$(date +'%Y%m%d%H%M')"
           echo "::set-output name=next_version::$NEXT_VERSION"
 
+  release:
+    runs-on: ubuntu-latest
+    needs: [setup, determine_version]
+
+    steps:
       - name: Create Git tag
         if: success()
-        run: git tag -a ${{ steps.version.outputs.next_version }} -m "Release ${{ steps.version.outputs.next_version }}"
-  
+        run: git tag -a ${{ needs.determine_version.outputs.next_version }} -m "Release ${{ needs.determine_version.outputs.next_version }}"
+
       - name: Push Git tag
         if: success()
-        run: git push origin ${{ steps.version.outputs.next_version }}
-  
+        run: git push origin ${{ needs.determine_version.outputs.next_version }}
+
       - name: Generate Changelog
         if: success()
         run: |
@@ -60,12 +71,17 @@ jobs:
           echo "Changelog:"
           cat changelog.txt
 
+  build_and_push_docker:
+    runs-on: ubuntu-latest
+    needs: [setup, release]
+
+    steps:
       - name: Build and Push Docker Image
         run: |
           docker compose build aio
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
-          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ steps.version.outputs.next_version }}-${{ steps.datetime.outputs.formatted_date }}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.next_version }}
           docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ steps.version.outputs.next_version }}-${{ steps.datetime.outputs.formatted_date }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.next_version }}
         env:
           DOCKER_BUILDKIT: 1
