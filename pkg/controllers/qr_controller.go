@@ -9,9 +9,9 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
-func ChartHandler(dependencies Dependencies) gin.HandlerFunc {
+func ChartHandler(dependencies Dependencies, env_file *string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// config := dependencies.GetConfig()
+		config := dependencies.GetConfig()
 
 		cht := c.DefaultQuery("cht", "qr")
 		chs := c.DefaultQuery("chs", "100x100")
@@ -35,7 +35,11 @@ func ChartHandler(dependencies Dependencies) gin.HandlerFunc {
 			return
 		}
 
-		imagePath := "./storage/" + cht + "_" + chs + "_" + chl + "_" + choe + "_" + strings.Replace(chld, "|", "", -1)
+		if env_file == nil {
+			*env_file = config.GetString("STORAGE")
+		}
+
+		imagePath := *env_file + cht + "_" + chs + "_" + chl + "_" + choe + "_" + strings.Replace(chld, "|", "", -1)
 		if _, err := os.Stat(imagePath); os.IsNotExist(err) {
 			err := qrcode.WriteFile(chl, qrcode.Medium, dimension, imagePath)
 			if err != nil {

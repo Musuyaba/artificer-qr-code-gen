@@ -10,6 +10,7 @@ import (
 
 func main() {
 	port := flag.String("port", "0", "Port to listen on")
+	env_file := flag.String("env-file", ".env", "Env file location")
 	flag.Parse()
 
 	config := viper.New()
@@ -22,5 +23,5 @@ func main() {
 		*port = config.GetString("PORT_GOLANG")
 	}
 
-	router.StartApp(config, port)
+	router.StartApp(config, port, env_file)
 }
