@@ -78,7 +78,9 @@ jobs:
 
       - name: Create Git tag
         if: success()
-        run: git tag -a ${{env.NEXT_VERSION}} -m "Release ${{env.NEXT_VERSION}}"
+        run: |
+          cat $GITHUB_ENV
+          git tag -a ${{env.NEXT_VERSION}} -m "Release ${{env.NEXT_VERSION}}"
 
       - name: Push Git tag
         if: success()
