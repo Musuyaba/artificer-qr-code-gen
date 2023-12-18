@@ -20,18 +20,42 @@ jobs:
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Before Run
+      - name: Before Run Copy .env
         run: cp .env.example .env
 
       - name: Extract Version from .env
-        id: extract_version
+        id: extract_version_env
         run: |
           export VERSION=$(grep 'APP_VERSION=' .env | cut -d'=' -f2)
           echo "::set-output name=version::$VERSION"
 
+      - name: Determine the next version
+        id: version
+        run: |
+          LAST_TAG=$(git describe --abbrev=0 --tags)
+          MAJOR_VERSION="${{ steps.extract_version_env.outputs.version }}"
+          MINOR_VERSION=$(awk -F'.' '{print $2}' <<< "$LAST_TAG")
+          NEXT_VERSION="V$MAJOR_VERSION.$((MINOR_VERSION + 1))"
+          echo "::set-output name=next_version::$NEXT_VERSION"
+
+      - name: Create Git tag
+        if: success()
+        run: git tag -a ${{ steps.version.outputs.next_version }} -m "Release ${{ steps.version.outputs.next_version }}"
+  
+      - name: Push Git tag
+        if: success()
+        run: git push origin ${{ steps.version.outputs.next_version }}
+  
+      - name: Generate Changelog
+        if: success()
+        run: |
+          git log --pretty=format:"%s" $(git describe --tags --abbrev=0)..HEAD > changelog.txt
+          echo "Changelog:"
+          cat changelog.txt
+
       - name: Build and Push Docker Image
         run: |
-          version=${{ steps.extract_version.outputs.version }}
+          version=${{ steps.extract_version_env.outputs.next_version }}
           docker compose build --build-arg SERVICE_NAME=${version}-${{ steps.datetime.outputs.formatted_date }} common
           docker tag musuyaba/artificer-qr-code-gen:latest ${{ secrets.DOCKER_USERNAME }}/artificer-qr-code-gen:latest
           docker tag musuyaba/artificer-qr-code-gen:latest ${{ secrets.DOCKER_USERNAME }}/artificer-qr-code-gen:${version}-${{ steps.datetime.outputs.formatted_date }}
