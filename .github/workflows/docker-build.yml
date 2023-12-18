@@ -64,8 +64,8 @@ jobs:
         run: |
           docker compose build aio
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
-          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ steps.extract_version_env.outputs.next_version }}-${{ steps.datetime.outputs.formatted_date }}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ steps.version.outputs.next_version }}-${{ steps.datetime.outputs.formatted_date }}
           docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ steps.extract_version_env.outputs.next_version }}-${{ steps.datetime.outputs.formatted_date }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ steps.version.outputs.next_version }}-${{ steps.datetime.outputs.formatted_date }}
         env:
           DOCKER_BUILDKIT: 1
