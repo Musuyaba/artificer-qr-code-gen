@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Set Date and Time Variables
         id: datetime
@@ -33,14 +35,14 @@ jobs:
         run: |
           git config user.email "musuyaba@gmail.com"
           git config user.name "Musuyaba Runner"
-          
+
       - name: Determine the next version
         id: version
         run: |
-          LAST_TAG=$(git describe --abbrev=0 --tags 2>/dev/null || echo "v0.0")
+          LAST_TAG=$(git describe --abbrev=0 --tags 2>/dev/null || echo "v1.0")
           MAJOR_VERSION="${{ steps.extract_version_env.outputs.version }}"
           MINOR_VERSION=$(awk -F'.' '{print $2}' <<< "$LAST_TAG")
-          NEXT_VERSION="v$MAJOR_VERSION.$((MINOR_VERSION + 1))"
+          NEXT_VERSION="$MAJOR_VERSION.$((MINOR_VERSION + 1))"
           echo "::set-output name=next_version::$NEXT_VERSION"
 
       - name: Create Git tag
