@@ -32,10 +32,10 @@ jobs:
       - name: Determine the next version
         id: version
         run: |
-          LAST_TAG=$(git describe --abbrev=0 --tags)
+          LAST_TAG=$(git describe --abbrev=0 --tags 2>/dev/null || echo "v0.0")
           MAJOR_VERSION="${{ steps.extract_version_env.outputs.version }}"
           MINOR_VERSION=$(awk -F'.' '{print $2}' <<< "$LAST_TAG")
-          NEXT_VERSION="V$MAJOR_VERSION.$((MINOR_VERSION + 1))"
+          NEXT_VERSION="v$MAJOR_VERSION.$((MINOR_VERSION + 1))"
           echo "::set-output name=next_version::$NEXT_VERSION"
 
       - name: Create Git tag
