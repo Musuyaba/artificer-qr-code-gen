@@ -29,6 +29,11 @@ jobs:
           export VERSION=$(grep 'APP_VERSION=' .env | cut -d'=' -f2)
           echo "::set-output name=version::$VERSION"
 
+      - name: Set Git user information
+        run: |
+          git config user.email "musuyaba@gmail.com"
+          git config user.name "Musuyaba Runner"
+          
       - name: Determine the next version
         id: version
         run: |
