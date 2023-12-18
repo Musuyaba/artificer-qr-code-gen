@@ -56,7 +56,7 @@ jobs:
         id: version
         run: |
           LAST_TAG=$(git describe --abbrev=0 --tags 2>/dev/null || echo "v1.0")
-          MAJOR_VERSION="${{ needs.setup.outputs.extract_version_env }}"
+          MAJOR_VERSION="$VERSION"
           MINOR_VERSION=$(awk -F'.' '{print $2}' <<< "$LAST_TAG")
           NEXT_VERSION="$MAJOR_VERSION.$((MINOR_VERSION + 1))-$(date +'%Y%m%d%H%M')"
           echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
@@ -78,11 +78,11 @@ jobs:
 
       - name: Create Git tag
         if: success()
-        run: git tag -a ${{ needs.determine_version.outputs.NEXT_VERSION }} -m "Release ${{ needs.determine_version.outputs.NEXT_VERSION }}"
+        run: git tag -a $NEXT_VERSION -m "Release $NEXT_VERSION"
 
       - name: Push Git tag
         if: success()
-        run: git push origin ${{ needs.determine_version.outputs.NEXT_VERSION }}
+        run: git push origin $NEXT_VERSION
 
       - name: Generate Changelog
         if: success()
@@ -100,8 +100,8 @@ jobs:
         run: |
           docker compose build aio
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
-          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:$NEXT_VERSION
           docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:$NEXT_VERSION
         env:
           DOCKER_BUILDKIT: 1
