@@ -1,9 +1,8 @@
 config:
-  target: "{{ $processEnvironment.WEB_PROXY }}"
   phases:
-    - duration: 30
+    - duration: 60
       arrivalRate: 200
-      maxVusers: 5
+      maxVusers: 1000
 scenarios:
   - flow:
       - get:
