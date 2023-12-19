@@ -89,20 +89,8 @@ jobs:
           do
             sleep 5
           done
-
-      - name: Debug list files
-        run: ls -la
-        shell: bash
-
-      - name: Generate Changelog and push it
-        if: success()
-        run: |
           chmod +x generate_changelog.sh
           ./generate_changelog.sh
-
-      - name: Debug list files
-        run: ls -la
-        shell: bash
 
       - name: Display release notes
         run: cat release_notes
