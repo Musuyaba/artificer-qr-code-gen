@@ -97,7 +97,8 @@ jobs:
     steps:
       - name: Build and Push Docker Image
         run: |
-          docker compose build aio
+          docker version
+          docker compose build -f docker-compose.yml aio
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
           docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
