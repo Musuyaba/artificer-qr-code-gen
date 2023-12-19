@@ -89,9 +89,16 @@ jobs:
         if: success()
         run: |
           bash generate_changelog.sh
-          git add release_notes.md
-          git commit -m "Update release notes"
-          git push origin HEAD:${{ github.ref }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.determine_version.outputs.NEXT_VERSION }}
+          release_name: Release ${{ needs.determine_version.outputs.NEXT_VERSION }}
+          body_path: release_notes.md
       
 
   build_and_push_docker:
