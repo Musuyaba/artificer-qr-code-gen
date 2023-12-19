@@ -84,7 +84,11 @@ jobs:
         if: success()
         run: |
           git push origin ${{ needs.determine_version.outputs.NEXT_VERSION }}
-          sleep 10 
+          echo "Waiting for tag to become available in remote repository..."
+          while ! git ls-remote --tags origin | grep ${{ needs.determine_version.outputs.NEXT_VERSION }}
+          do
+            sleep 5
+          done
 
       - name: Debug list files
         run: ls -la
@@ -129,6 +133,9 @@ jobs:
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Before Run Copy .env
         run: cp .env.example .env
         
@@ -139,5 +146,7 @@ jobs:
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
           docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
+          docker push ghcr.io/${{ github.repository_owner }}/${{vars.DOCKER_AIO_REPO}}:latest
+          docker push ghcr.io/${{ github.repository_owner }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
         env:
           DOCKER_BUILDKIT: 1
