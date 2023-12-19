@@ -78,7 +78,6 @@ jobs:
       - name: Create Git tag
         if: success()
         run: |
-          cat $GITHUB_ENV
           git tag -a ${{ needs.determine_version.outputs.NEXT_VERSION }} -m "Release ${{ needs.determine_version.outputs.NEXT_VERSION }}"
       
       - name: Push Git tag
@@ -89,7 +88,10 @@ jobs:
         if: success()
         run: |
           bash generate_changelog.sh
-          cat release_notes.md
+
+      - name: Display release notes
+        run: cat release_notes
+        shell: bash
 
       - name: Create Release
         id: create_release
