@@ -86,8 +86,8 @@ jobs:
 
       - name: Generate Changelog and push it
         if: success()
-        run: |
-          bash generate_changelog.sh
+        run: generate_changelog.sh
+        shell: bash
 
       - name: Display release notes
         run: cat release_notes
