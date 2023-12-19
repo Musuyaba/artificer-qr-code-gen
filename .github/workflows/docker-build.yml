@@ -10,19 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      id: setup
-      values: ${{ steps.setup.outputs }}
+      VERSION: ${{ steps.setup.outputs.VERSION }}
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_TOKEN }}
-
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
 
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
@@ -34,26 +28,20 @@ jobs:
         id: setup
         run: |
           export VERSION=$(grep 'APP_VERSION=' .env | cut -d'=' -f2)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
   determine_version:
     runs-on: ubuntu-latest
     needs: setup
 
     outputs:
-      id: version
-      values: ${{ steps.determine_version.outputs }}
+      NEXT_VERSION: ${{ steps.determine_version.outputs.NEXT_VERSION }}
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_TOKEN }}
-
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
 
       - name: Set Git user information
         run: |
@@ -67,23 +55,18 @@ jobs:
           MAJOR_VERSION="$VERSION"
           MINOR_VERSION=$(awk -F'.' '{print $2}' <<< "$LAST_TAG")
           NEXT_VERSION="$MAJOR_VERSION.$((MINOR_VERSION + 1))-$(date +'%Y%m%d%H%M')"
-          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+          echo "NEXT_VERSION=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
           echo "NEXT_VERSION=$NEXT_VERSION" # This line is for outputting the value to be captured by the job output
 
   release:
     runs-on: ubuntu-latest
-    needs: determine_version
+    needs: [setup, determine_version]
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_TOKEN }}
-
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
 
       - name: Create Git tag
         if: success()
@@ -104,15 +87,15 @@ jobs:
 
   build_and_push_docker:
     runs-on: ubuntu-latest
-    needs: release
+    needs: [setup, determine_version, release]
 
     steps:
       - name: Build and Push Docker Image
         run: |
           docker compose build aio
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
-          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.release.outputs.NEXT_VERSION }}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
           docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.release.outputs.NEXT_VERSION }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
         env:
           DOCKER_BUILDKIT: 1
