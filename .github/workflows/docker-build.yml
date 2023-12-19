@@ -54,7 +54,7 @@ jobs:
           git fetch --tags
           LAST_TAG=$(git describe --abbrev=0 --tags 2>/dev/null || echo "v1.0-202312081403")
           MAJOR_VERSION=$(echo "${{ needs.setup.outputs.VERSION }}")
-          MINOR_VERSION=$(echo "$LAST_TAG" | sed 's/.*\.\([0-9]*\)-.*/\1/'))
+          MINOR_VERSION=$(echo "v1.1-12313123" | sed -n 's/.*\.\([0-9]\+\)-.*/\1/p')
           NEXT_VERSION="$MAJOR_VERSION.$((MINOR_VERSION + 1))-$(date +'%Y%m%d%H%M')"
           echo "NEXT_VERSION=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
           echo "MINOR_VERSION=$MINOR_VERSION"
@@ -107,9 +107,7 @@ jobs:
         
       - name: Build and Push Docker Image
         run: |
-          docker version
-          docker compose version
-          docker compose -f docker-compose.yml build  aio
+          docker compose build  aio
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
           docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
