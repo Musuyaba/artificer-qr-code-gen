@@ -89,6 +89,7 @@ jobs:
           do
             sleep 5
           done
+          git fetch --tags
           chmod +x generate_changelog.sh
           ./generate_changelog.sh
 

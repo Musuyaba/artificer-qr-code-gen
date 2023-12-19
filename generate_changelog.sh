@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set -x 
-git fetch --tags;
 
 num_tags=$(git tag -l | wc -l)
 echo "Number of tags: $num_tags"
