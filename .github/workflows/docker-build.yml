@@ -84,10 +84,15 @@ jobs:
         if: success()
         run: git push origin ${{ needs.determine_version.outputs.NEXT_VERSION }}
 
+      - name: Debug list files
+        run: ls -la
+        shell: bash
+
       - name: Generate Changelog and push it
         if: success()
-        run: generate_changelog.sh
-        shell: bash
+        run: |
+          chmod +x generate_changelog.sh
+          ./generate_changelog.sh
 
       - name: Display release notes
         run: cat release_notes
