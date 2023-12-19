@@ -104,10 +104,13 @@ jobs:
           
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Before Run Copy .env
+        run: cp .env.example .env
         
       - name: Build and Push Docker Image
         run: |
-          docker compose build  aio
+          docker compose build aio
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
           docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
