@@ -67,6 +67,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_TOKEN }}
+          
+      - name: Set Git user information
+        run: |
+          git config user.email "musuyaba@gmail.com"
+          git config user.name "Musuyaba Runner"
 
       - name: Create Git tag
         if: success()
