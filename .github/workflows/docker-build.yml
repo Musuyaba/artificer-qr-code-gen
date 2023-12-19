@@ -74,22 +74,24 @@ jobs:
         run: |
           git config user.email "musuyaba@gmail.com"
           git config user.name "Musuyaba Runner"
-
-      - name: Generate Changelog
-        if: success()
-        run: |
-          echo "CHANGELOG=$(git log --pretty=format:"%s" $(git describe --tags --abbrev=0)..HEAD)" >> $GITHUB_ENV
   
       - name: Create Git tag
         if: success()
         run: |
           cat $GITHUB_ENV
-          git tag -a ${{ needs.determine_version.outputs.NEXT_VERSION }} -m "Release ${{ needs.determine_version.outputs.NEXT_VERSION }} $(echo $CHANGELOG)"
+          git tag -a ${{ needs.determine_version.outputs.NEXT_VERSION }} -m "Release ${{ needs.determine_version.outputs.NEXT_VERSION }}"
       
       - name: Push Git tag
         if: success()
         run: git push origin ${{ needs.determine_version.outputs.NEXT_VERSION }}
 
+      - name: Generate Changelog and push it
+        if: success()
+        run: |
+          bash generate_changelog.sh
+          git add release_notes.md
+          git commit -m "Update release notes"
+          git push origin HEAD:${{ github.ref }}
       
 
   build_and_push_docker:
