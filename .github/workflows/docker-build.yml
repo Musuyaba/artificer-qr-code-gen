@@ -82,7 +82,9 @@ jobs:
       
       - name: Push Git tag
         if: success()
-        run: git push origin ${{ needs.determine_version.outputs.NEXT_VERSION }}
+        run: |
+          git push origin ${{ needs.determine_version.outputs.NEXT_VERSION }}
+          sleep 10 
 
       - name: Debug list files
         run: ls -la
@@ -97,7 +99,7 @@ jobs:
       - name: Debug list files
         run: ls -la
         shell: bash
-        
+
       - name: Display release notes
         run: cat release_notes
         shell: bash
