@@ -52,11 +52,11 @@ jobs:
         id: determine_version
         run: |
           LAST_TAG=$(git describe --abbrev=0 --tags 2>/dev/null || echo "v1.0")
-          MAJOR_VERSION="$VERSION"
+          MAJOR_VERSION=$(echo "${{ needs.setup.outputs.VERSION }}" | sed -n 's/^v\([0-9]*\)\..*$/\1/p')
           MINOR_VERSION=$(awk -F'.' '{print $2}' <<< "$LAST_TAG")
-          NEXT_VERSION="$MAJOR_VERSION.$((MINOR_VERSION + 1))-$(date +'%Y%m%d%H%M')"
+          NEXT_VERSION="v$MAJOR_VERSION.$((MINOR_VERSION + 1))-$(date +'%Y%m%d%H%M')"
           echo "NEXT_VERSION=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
-          echo "NEXT_VERSION=$NEXT_VERSION" # This line is for outputting the value to be captured by the job output
+          echo "NEXT_VERSION=$NEXT_VERSION"
 
   release:
     runs-on: ubuntu-latest
