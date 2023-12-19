@@ -89,6 +89,7 @@ jobs:
         if: success()
         run: |
           bash generate_changelog.sh
+          cat release_notes.md
 
       - name: Create Release
         id: create_release
