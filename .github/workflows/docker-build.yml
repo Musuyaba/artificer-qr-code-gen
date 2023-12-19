@@ -85,11 +85,10 @@ jobs:
         run: |
           git push origin ${{ needs.determine_version.outputs.NEXT_VERSION }}
           echo "Waiting for tag to become available in remote repository..."
-          while ! git ls-remote --tags origin | grep ${{ needs.determine_version.outputs.NEXT_VERSION }}
+          while ! git fetch --tags | grep ${{ needs.determine_version.outputs.NEXT_VERSION }}
           do
             sleep 5
           done
-          git fetch --tags
           chmod +x generate_changelog.sh
           ./generate_changelog.sh
 
