@@ -85,7 +85,7 @@ jobs:
         run: |
           git push origin ${{ needs.determine_version.outputs.NEXT_VERSION }}
           echo "Waiting for tag to become available in remote repository..."
-          while ! git fetch --tags | grep ${{ needs.determine_version.outputs.NEXT_VERSION }}
+          while ! (git fetch --tags && git tag -l | grep ${{ needs.determine_version.outputs.NEXT_VERSION }})
           do
             sleep 5
           done
