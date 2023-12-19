@@ -1,6 +1,10 @@
 #!/bin/bash
 
-touch release_notes.md;
+set -x 
+git fetch --tags;
+
+num_tags=$(git tag -l | wc -l)
+echo "Number of tags: $num_tags"
 
 if [ $(git tag -l | wc -l) -ge 2 ]; then
     latest_tag=$(git describe --tags --abbrev=0);
