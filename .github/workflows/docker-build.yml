@@ -97,11 +97,7 @@ jobs:
           CHANGELOG=$(./generate_changelog.sh)
           echo "::set-output name=CHANGELOG::${CHANGELOG}"
         shell: bash       
-
-      - name: Display release notes
-        run: cat release_notes
-        shell: bash
-
+        
       - name: Create Release
         id: create_release
         uses: ncipollo/release-action@v1
