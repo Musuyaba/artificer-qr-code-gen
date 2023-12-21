@@ -52,7 +52,7 @@ jobs:
         id: determine_version
         run: |
           git fetch --tags
-          LAST_TAG=$(git describe --abbrev=0 --tags 2>/dev/null || echo "v1.0-202312081403")
+          LAST_TAG=$(git describe --abbrev=0 --tags || echo "v1.0-202312081403")
           MAJOR_VERSION=$(echo "${{ needs.setup.outputs.VERSION }}")
           MINOR_VERSION=$(echo "$LAST_TAG" | sed -n 's/.*\.\([0-9]\+\)-.*/\1/p')
           NEXT_VERSION="$MAJOR_VERSION.$((MINOR_VERSION + 1))-$(date +'%Y%m%d%H%M')"
@@ -63,6 +63,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: [setup, determine_version]
+    outputs:
+      CHANGELOG: ${{ steps.release_notes.outputs.CHANGELOG }}
 
     steps:
       - name: Checkout Repository
@@ -82,6 +84,7 @@ jobs:
           git tag -a ${{ needs.determine_version.outputs.NEXT_VERSION }} -m "Release ${{ needs.determine_version.outputs.NEXT_VERSION }}"
       
       - name: Push Git tag
+        id: release_notes
         if: success()
         run: |
           git push -u origin ${{ needs.determine_version.outputs.NEXT_VERSION }}
@@ -91,7 +94,8 @@ jobs:
             sleep 5
           done
           chmod +x generate_changelog.sh
-          ./generate_changelog.sh
+          CHANGELOG=$(./generate_changelog.sh)
+          echo "CHANGELOG=$CHANGELOG" >> "$GITHUB_OUTPUT"          
 
       - name: Display release notes
         run: cat release_notes
@@ -104,7 +108,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           tag: ${{ needs.determine_version.outputs.NEXT_VERSION }}
           name: Release ${{ needs.determine_version.outputs.NEXT_VERSION }}
-          bodyFile: release_notes.md
+          body: ${{ steps.release_notes.outputs.CHANGELOG }}
           draft: false
           prerelease: false
       
