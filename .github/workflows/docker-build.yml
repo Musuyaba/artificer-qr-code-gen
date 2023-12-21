@@ -95,7 +95,8 @@ jobs:
           done
           chmod +x generate_changelog.sh
           CHANGELOG=$(./generate_changelog.sh)
-          echo "CHANGELOG=$CHANGELOG" >> "$GITHUB_OUTPUT"          
+          echo "::set-output name=CHANGELOG::${CHANGELOG}"
+        shell: bash       
 
       - name: Display release notes
         run: cat release_notes
