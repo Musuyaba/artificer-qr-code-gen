@@ -13,3 +13,4 @@
 tmp
 .env
 report_*
+release_notes.md
