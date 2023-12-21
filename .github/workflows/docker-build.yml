@@ -97,7 +97,13 @@ jobs:
           chmod +x generate_changelog.sh
           CHANGELOG=$(./generate_changelog.sh | base64 -w 0)
           echo "::set-output name=CHANGELOG::${CHANGELOG}"
-        shell: bash       
+        shell: bash 
+        
+      - name: Decode CHANGELOG
+        id: decode_changelog
+        run: |
+          echo "::set-output name=CHANGELOG::$(echo "${{ steps.release_notes.outputs.CHANGELOG }}" | base64 --decode)"
+        shell: bash      
 
       - name: Create Release
         id: create_release
@@ -106,7 +112,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           tag: ${{ needs.determine_version.outputs.NEXT_VERSION }}
           name: Release ${{ needs.determine_version.outputs.NEXT_VERSION }}
-          body: ($echo "${{ steps.release_notes.outputs.CHANGELOG }}" | base64 --decode))
+          body: ${{ steps.release_notes.outputs.CHANGELOG }}
           draft: false
           prerelease: false
       
@@ -132,14 +138,15 @@ jobs:
         
       - name: Build and Push Docker Image
         run: |
+          REPO_OWNER_LOWER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')
           docker compose build aio
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
           docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
-          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest docker.pkg.github.com/${{ github.repository }}/${{ vars.DOCKER_AIO_REPO }}:latest
-          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest docker.pkg.github.com/${{ github.repository }}/${{ vars.DOCKER_AIO_REPO }}:${{ needs.determine_version.outputs.NEXT_VERSION }}
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest docker.pkg.github.com/${REPO_OWNER_LOWER}/${{ vars.DOCKER_AIO_REPO }}:latest
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest docker.pkg.github.com/${REPO_OWNER_LOWER}/${{ vars.DOCKER_AIO_REPO }}:${{ needs.determine_version.outputs.NEXT_VERSION }}
           docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
-          docker push docker.pkg.github.com/${{ github.repository }}/${{vars.DOCKER_AIO_REPO}}:latest
-          docker push docker.pkg.github.com/${{ github.repository }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
+          docker push docker.pkg.github.com/${REPO_OWNER_LOWER}/${{vars.DOCKER_AIO_REPO}}:latest
+          docker push docker.pkg.github.com/${REPO_OWNER_LOWER}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
         env:
           DOCKER_BUILDKIT: 1
