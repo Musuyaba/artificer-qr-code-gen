@@ -156,5 +156,11 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
           docker push docker.pkg.github.com/${REPO_OWNER_LOWER}/${{vars.DOCKER_REPO_GITHUB_NAME}}/${{vars.DOCKER_AIO_REPO}}:latest
           docker push docker.pkg.github.com/${REPO_OWNER_LOWER}/${{vars.DOCKER_REPO_GITHUB_NAME}}/${{vars.DOCKER_AIO_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
+
+          docker compose build common
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_COMMON_REPO}}:latest docker.pkg.github.com/${REPO_OWNER_LOWER}/${{vars.DOCKER_REPO_GITHUB_NAME}}/${{ vars.DOCKER_COMMON_REPO }}:latest
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_COMMON_REPO}}:latest docker.pkg.github.com/${REPO_OWNER_LOWER}/${{vars.DOCKER_REPO_GITHUB_NAME}}/${{ vars.DOCKER_COMMON_REPO }}:${{ needs.determine_version.outputs.NEXT_VERSION }}
+          docker push docker.pkg.github.com/${REPO_OWNER_LOWER}/${{vars.DOCKER_REPO_GITHUB_NAME}}/${{vars.DOCKER_COMMON_REPO}}:latest
+          docker push docker.pkg.github.com/${REPO_OWNER_LOWER}/${{vars.DOCKER_REPO_GITHUB_NAME}}/${{vars.DOCKER_COMMON_REPO}}:${{ needs.determine_version.outputs.NEXT_VERSION }}
         env:
           DOCKER_BUILDKIT: 1
