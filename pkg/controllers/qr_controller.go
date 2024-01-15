@@ -39,7 +39,7 @@ func ChartHandler(dependencies Dependencies, env_file *string) gin.HandlerFunc {
 			*env_file = config.GetString("STORAGE")
 		}
 
-		imagePath := *env_file + cht + "_" + chs + "_" + chl + "_" + choe + "_" + strings.Replace(chld, "|", "", -1)
+		imagePath := *env_file + cht + "_" + chs + "_" + strings.Replace(chl, "/", "_", -1) + "_" + choe + "_" + strings.Replace(chld, "|", "_", -1)
 		if _, err := os.Stat(imagePath); os.IsNotExist(err) {
 			err := qrcode.WriteFile(chl, qrcode.Medium, dimension, imagePath)
 			if err != nil {
